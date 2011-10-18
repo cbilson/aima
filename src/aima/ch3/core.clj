@@ -1,15 +1,19 @@
-(ns aima.ch3.core
-  (:import [org.apache.commons.math.util MathUtils]
-           [java.lang Math]))
+(ns aima.ch3.core)
 
 (def ^:dynamic max-expansions 100)
 
-(defrecord Node [state action cost])
+;(defrecord Problem [initial-state goal expand cost])
 
-(defrecord Problem [initial-state goal expand cost])
+(defn problem [initial-state goal? expand cost]
+  {:initial-state initial-state :goal? goal? :expand expand :cost cost})
 
-(defn goal? [problem path]
-  (= (:goal problem) (:state (last path))))
+;(defrecord Node [state action cost])
+
+(defn node [state action cost]
+  {:state state :action action :cost cost})
+
+;; (defn goal? [problem path]
+;;   (= (:goal problem) (:state (last path))))
 
 (defn print-path [ordinal path]
   (println ordinal ") "
@@ -32,7 +36,7 @@
     (if-let [path (first frontier)]
       (do
         (print-path recur-count path)
-        (if (goal? problem path)
+        (if ((:goal? problem) (-> path last :state))
           path
           (if (< recur-count max-expansions)
             (recur (->> ((:expand problem) path #{})
@@ -47,7 +51,7 @@
       (do
         (print-path recur-count path)
         (cond
-         (goal? problem path) path
+         ((:goal? problem) (-> path last :state)) path
          (< recur-count max-expansions)
          (let [leaf (-> path last :state)]
            (recur (->> ((:expand problem) path explored)
@@ -55,8 +59,8 @@
                   (conj explored leaf)
                   (inc recur-count))))))))
 
-(defn a*-search [start goal expansion-fn g h]
-  (-> (Problem. start goal
-                expansion-fn
-                (fn [x] (+ (g x) (h x))))
+(defn a*-search [start goal? expansion-fn g h]
+  (-> (problem start goal?
+               expansion-fn
+               (fn [x] (+ (g x) (h x))))
       graph-search))

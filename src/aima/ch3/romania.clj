@@ -1,5 +1,6 @@
 (ns aima.ch3.romania
-  (:import [aima.ch3.core]))
+  (:use [aima.ch3.core])
+  (:gen-class))
 
 (def romanian-roads
   [["Arad" "Zerind" 75]
@@ -39,7 +40,7 @@
     (->> (filter is-in? romanian-roads)
          (filter (comp not (partial contains? explored) :state))
          (map (partial change-edge-direction from))
-         (map (fn [edge] (conj path (Node. (second edge) :drive (nth edge 2))))))))
+         (map (fn [edge] (conj path (node (second edge) :drive (nth edge 2))))))))
 
 (defn distance-to-bucharest [from]
   (condp = from
@@ -64,8 +65,9 @@
     "Vaslui" 199
     "Zerind" 374))
 
-(defn a*-romania [start goal]
-  (a*-search (Node. start :start 0) goal
+(defn -main [start goal]
+  (a*-search (node start :start 0)
+             (fn [x] (= goal x))
              expand-romania
              (fn [path] (reduce + (map :cost path)))
              (comp distance-to-bucharest :state last)))
